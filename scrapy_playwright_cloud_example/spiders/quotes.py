@@ -1,4 +1,4 @@
-from scrapy import Spider, Request
+from scrapy import Request, Spider
 from scrapy_playwright.page import PageMethod
 
 
@@ -8,14 +8,19 @@ class QuotesSpider(Spider):
     def start_requests(self):
         yield Request(
             url="http://quotes.toscrape.com/scroll",
-            meta=dict(
-                playwright=True,
-                playwright_page_methods=[
+            meta={
+                "playwright": True,
+                "playwright_page_methods": [
                     PageMethod("wait_for_selector", "div.quote"),
                     PageMethod("evaluate", "window.scrollBy(0, document.body.scrollHeight)"),
                     PageMethod("wait_for_selector", "div.quote:nth-child(11)"),
+                    PageMethod(
+                        "screenshot",
+                        path="quotes_screenshot.png",
+                        full_page=True
+                    ),
                 ],
-            ),
+            },
         )
 
     async def parse(self, response):

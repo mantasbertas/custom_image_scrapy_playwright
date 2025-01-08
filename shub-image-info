@@ -1,0 +1,9 @@
+#!/bin/bash
+
+SPIDERS=$(scrapy list | sed -e 's/^/"/' -e 's/$/"/' | paste -sd, -)
+cat <<EOF
+{
+  "project_type": "scrapy",
+  "spiders": [$SPIDERS]
+}
+EOF

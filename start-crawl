@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+
+if [ -z "$SHUB_SPIDER" ]; then
+  echo "Error: SHUB_SPIDER environment variable is not set. Exiting."
+  exit 1
+fi
+
+exec scrapy crawl "$SHUB_SPIDER"
