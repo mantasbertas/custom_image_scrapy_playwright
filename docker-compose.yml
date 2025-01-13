@@ -1,0 +1,13 @@
+services:
+  scraper-producer:
+    container_name: scraper-producer
+    build:
+      context: .
+      dockerfile: Dockerfile
+    platform: linux/arm64/v8
+    volumes:
+      - ./docker:/var/www/html
+    env_file:
+      - .env
+    stdin_open: true
+    tty: true

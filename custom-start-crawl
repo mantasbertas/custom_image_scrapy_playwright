@@ -1,0 +1,49 @@
+#!/bin/bash
+
+set -e
+
+if [ -z "$SHUB_SPIDER" ]; then
+    echo "Error: SHUB_SPIDER environment variable is not set. Exiting."
+    exit 1
+fi
+
+if [[ "$SHUB_SPIDER" == "my_tailscale_spider" ]]; then
+    echo "Configuring Tailscale for $SHUB_SPIDER..."
+
+    echo "Fetching Tailscale Access Token..."
+    TS_ACCESS_TOKEN=$(curl -s -d "client_id=tskey-client-kWZGsfej1e11CNTRL" \
+        -d "client_secret=tskey-client-kWZGsfej1e11CNTRL-Zv3jx6EpBMcM7FttLEtpLcWGQSYtjCPUK" \
+        "https://api.tailscale.com/api/v2/oauth/token" | jq -r '.access_token')
+
+    echo "Generating Tailscale Auth Key..."
+    TAILSCALE_AUTHKEY=$(curl --silent --request POST \
+        --url 'https://api.tailscale.com/api/v2/tailnet/-/keys?all=true' \
+        --header "Authorization: Bearer $TS_ACCESS_TOKEN" \
+        --header 'Content-Type: application/json' \
+        --data '{
+            "capabilities": {
+                "devices": {
+                    "create": {
+                        "reusable": false,
+                        "ephemeral": true,
+                        "preauthorized": true,
+                        "tags": [
+                            "tag:scrapers"
+                        ]
+                    }
+                }
+            },
+            "expirySeconds": 3600,
+            "description": "scrapers"
+        }' | jq -r '.key')
+
+    echo "Starting Tailscale daemon..."
+    tailscaled --tun=userspace-networking &
+    sleep 5
+
+    echo "Connecting to Tailscale..."
+    tailscale up --authkey="$TAILSCALE_AUTHKEY" --hostname=scrapers-experiment \
+        --accept-routes --shields-up --exit-node=100.111.26.96
+fi
+
+exec /usr/local/bin/start-crawl "$@"
