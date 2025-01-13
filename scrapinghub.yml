@@ -1,4 +1,4 @@
 projects:
   default: 393637
-
-image: images.scrapinghub.com/project/393637
+requirements_file: requirements.txt
+image: docker.io/mantasbertasius/zyte_cloud:latest

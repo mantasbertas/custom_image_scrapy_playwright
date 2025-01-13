@@ -1,4 +1,4 @@
-#!/bin/bash
+##!/bin/bash
 
 # Exit on errors
 set -e
@@ -32,4 +32,10 @@ for arg in "$@"; do
 done
 
 # Pass all arguments to Scrapy
+exec scrapy "$@"
+
+# entrypoint.sh
+if [[ "$1" == "start-crawl" || "$1" == "shub-image-info" ]]; then
+    exec "$@"
+fi
 exec scrapy "$@"
